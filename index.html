@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f4c5c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="كنز الأسرة">
+<title>كنز الأسرة - نظام إدارة المبيعات والحسابات</title>
+<link rel="manifest" id="pwa-manifest">
+<style>
+:root {
+  --primary: #0f4c5c;
+  --primary-dark: #09333e;
+  --primary-light: #e6f2f5;
+  --accent: #e36414;
+  --success: #1b8a5a;
+  --success-bg: #e7f6ef;
+  --danger: #c92a2a;
+  --danger-bg: #fdecec;
+  --warning: #d97706;
+  --warning-bg: #fef3c7;
+  --bg: #f4f6f8;
+  --card: #ffffff;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, 'Cairo', Arial, sans-serif; }
+body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; overflow-x: hidden; }
+
+/* Sidebar (Desktop) */
+.sidebar {
+  width: 240px; background: var(--primary); color: #fff; display: flex; flex-direction: column;
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; transition: transform .25s ease;
+}
+.brand {
+  padding: 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.12);
+  display: flex; align-items: center; gap: 10px;
+}
+.brand-logo {
+  width: 40px; height: 40px; border-radius: 10px; background: var(--accent);
+  display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; flex-shrink: 0;
+}
+.brand h1 { font-size: 16px; font-weight: 700; line-height: 1.3; }
+.brand small { font-size: 11px; color: rgba(255,255,255,0.72); display: block; }
+.nav-list { list-style: none; padding: 12px 10px; flex: 1; overflow-y: auto; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-radius: 10px;
+  cursor: pointer; color: rgba(255,255,255,0.85); font-size: 14px; font-weight: 600; margin-bottom: 4px;
+  transition: background .15s;
+}
+.nav-item:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.nav-item.active { background: #fff; color: var(--primary); }
+.nav-item svg { width: 19px; height: 19px; flex-shrink: 0; }
+.sidebar-footer { padding: 12px 16px; font-size: 11px; color: rgba(255,255,255,0.65); border-top: 1px solid rgba(255,255,255,0.12); text-align: center; }
+
+/* Main Content */
+.main { flex: 1; margin-right: 240px; padding: 20px; width: calc(100% - 240px); padding-bottom: 80px; }
+.topbar {
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+  margin-bottom: 20px; background: var(--card); padding: 14px 18px; border-radius: var(--radius); box-shadow: var(--shadow);
+}
+.topbar h2 { font-size: 18px; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+.topbar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Bottom Nav (Mobile) */
+.bottom-nav {
+  display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #fff;
+  border-top: 1px solid var(--border); z-index: 200; justify-content: space-around; padding: 6px 2px;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.06);
+}
+.bnav-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; background: none; border: none;
+  color: var(--muted); font-size: 10px; font-weight: 600; cursor: pointer; padding: 4px 6px; border-radius: 8px;
+}
+.bnav-btn.active { color: var(--primary); background: var(--primary-light); }
+.bnav-btn svg { width: 20px; height: 20px; }
+
+/* Cards & Grids */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-bottom: 20px; }
+.stat-card {
+  background: var(--card); padding: 16px; border-radius: var(--radius); box-shadow: var(--shadow);
+  border-right: 4px solid var(--primary);
+}
+.stat-card.green { border-right-color: var(--success); }
+.stat-card.orange { border-right-color: var(--accent); }
+.stat-card.red { border-right-color: var(--danger); }
+.stat-label { font-size: 12px; color: var(--muted); font-weight: 600; margin-bottom: 6px; }
+.stat-value { font-size: 22px; font-weight: 800; color: var(--text); }
+.stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+.card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 18px; }
+.card-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.card-title { font-size: 15px; font-weight: 700; color: var(--primary); }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 9px 14px; border-radius: 8px; border: none; font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: opacity .15s, transform .05s; text-decoration: none;
+}
+.btn:active { transform: scale(0.98); }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-accent { background: var(--accent); color: #fff; }
+.btn-success { background: var(--success); color: #fff; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-outline { background: #fff; color: var(--primary); border: 1px solid var(--border); }
+.btn-sm { padding: 6px 10px; font-size: 12px; }
+.btn-xs { padding: 4px 8px; font-size: 11px; }
+
+/* Inputs */
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+.form-group label { font-size: 12px; font-weight: 700; color: var(--text); }
+input, select, textarea {
+  padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px;
+  background: #fff; color: var(--text); width: 100%; outline: none;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+
+/* Tables */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { padding: 10px 10px; text-align: right; border-bottom: 1px solid var(--border); }
+th { background: #f8fafc; color: var(--muted); font-weight: 700; font-size: 12px; white-space: nowrap; }
+tr:hover td { background: #fafcfd; }
+
+/* Badges */
+.badge { display: inline-block; padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.badge-green { background: var(--success-bg); color: var(--success); }
+.badge-red { background: var(--danger-bg); color: var(--danger); }
+.badge-warn { background: var(--warning-bg); color: var(--warning); }
+.badge-blue { background: var(--primary-light); color: var(--primary); }
+
+/* POS Layout */
+.pos-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; }
+.search-results {
+  max-height: 280px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; margin-top: 8px;
+}
+.prod-pick {
+  display: flex; justify-content: space-between; align-items: center; padding: 10px 12px;
+  border-bottom: 1px solid var(--border); cursor: pointer; transition: background .12s;
+}
+.prod-pick:hover { background: var(--primary-light); }
+.prod-pick:last-child { border-bottom: none; }
+
+/* Empty state */
+.empty-state { text-align: center; padding: 36px 16px; color: var(--muted); }
+.empty-state p { margin: 8px 0 14px; font-size: 14px; }
+
+/* Modal */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55); display: none;
+  align-items: center; justify-content: center; z-index: 500; padding: 14px;
+}
+.modal-backdrop.open { display: flex; }
+.modal {
+  background: #fff; border-radius: 14px; width: 100%; max-width: 560px; max-height: 90vh;
+  overflow-y: auto; padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+.modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.modal-head h3 { font-size: 16px; color: var(--primary); }
+.close-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--muted); line-height: 1; }
+
+/* Toast */
+.toast {
+  position: fixed; top: 18px; left: 50%; transform: translateX(-50%); background: #1e293b; color: #fff;
+  padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; z-index: 999;
+  display: none; box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+.toast.show { display: block; }
+
+.section { display: none; }
+.section.active { display: block; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .main { margin-right: 0; width: 100%; padding: 12px; padding-bottom: 85px; }
+  .bottom-nav { display: flex; }
+  .pos-grid { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* Print Area */
+#print-area { display: none; }
+@media print {
+  body > *:not(#print-area) { display: none !important; }
+  #print-area { display: block !important; width: 100%; color: #000; background: #fff; }
+  #print-area.thermal { width: 76mm; margin: 0 auto; font-size: 12px; }
+  #print-area.a4 { width: 100%; padding: 10mm; font-size: 13px; }
+  #print-area table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  #print-area th, #print-area td { border: 1px solid #333; padding: 6px; text-align: right; }
+  #print-area.thermal th, #print-area.thermal td { border: none; border-bottom: 1px dashed #333; padding: 4px 2px; font-size: 11px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Sidebar (Desktop) -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-logo">ك</div>
+    <div>
+      <h1 id="side-store-name">كنز الأسرة</h1>
+      <small>نظام المبيعات والحسابات</small>
+    </div>
+  </div>
+  <ul class="nav-list" id="desktop-nav">
+    <li class="nav-item active" data-tab="dashboard" onclick="switchTab('dashboard')">📊 لوحة التحكم</li>
+    <li class="nav-item" data-tab="sales" onclick="switchTab('sales')">🛒 المبيعات (كاشير)</li>
+    <li class="nav-item" data-tab="purchases" onclick="switchTab('purchases')">📥 المشتريات</li>
+    <li class="nav-item" data-tab="inventory" onclick="switchTab('inventory')">📦 المخزن والأصناف</li>
+    <li class="nav-item" data-tab="customers" onclick="switchTab('customers')">👥 العملاء</li>
+    <li class="nav-item" data-tab="suppliers" onclick="switchTab('suppliers')">🚚 الموردين</li>
+    <li class="nav-item" data-tab="invoices" onclick="switchTab('invoices')">🧾 سجل الفواتير</li>
+    <li class="nav-item" data-tab="expenses" onclick="switchTab('expenses')">💸 المصروفات والتقارير</li>
+    <li class="nav-item" data-tab="settings" onclick="switchTab('settings')">⚙️ الإعدادات والنسخ</li>
+  </ul>
+  <div class="sidebar-footer">يعمل أوفلاين 100% • حفظ تلقائي</div>
+</aside>
+
+<!-- Main Content -->
+<main class="main">
+  <div class="topbar">
+    <h2 id="page-title">📊 لوحة التحكم</h2>
+    <div class="topbar-actions">
+      <button class="btn btn-primary btn-sm" onclick="switchTab('sales')">+ فاتورة بيع</button>
+      <button class="btn btn-accent btn-sm" onclick="switchTab('purchases')">+ فاتورة شراء</button>
+      <button class="btn btn-outline btn-sm" onclick="switchTab('settings')">⚙️ الإعدادات</button>
+    </div>
+  </div>
+
+  <!-- 1. DASHBOARD -->
+  <section id="tab-dashboard" class="section active">
+    <div class="stats-grid">
+      <div class="stat-card green">
+        <div class="stat-label">مبيعات اليوم</div>
+        <div class="stat-value" id="stat-today-sales">0 ج</div>
+        <div class="stat-sub" id="stat-today-count">0 فاتورة</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">صافي ربح اليوم (تقديري)</div>
+        <div class="stat-value" id="stat-today-profit">0 ج</div>
+        <div class="stat-sub">بعد خصم التكلفة والمصروفات</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-label">مستحقات عند العملاء (لنا)</div>
+        <div class="stat-value" id="stat-cust-due">0 ج</div>
+        <div class="stat-sub" id="stat-cust-count">0 عميل</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-label">مستحقات للموردين (علينا)</div>
+        <div class="stat-value" id="stat-supp-due">0 ج</div>
+        <div class="stat-sub" id="stat-supp-count">0 مورد</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">🚀 بداية سريعة</span>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="openProductModal()">+ إضافة صنف للمخزن</button>
+        <button class="btn btn-outline" onclick="openPartyModal('customer')">+ إضافة عميل جديد</button>
+        <button class="btn btn-outline" onclick="openPartyModal('supplier')">+ إضافة مورد جديد</button>
+        <button class="btn btn-outline" onclick="switchTab('expenses')">+ تسجيل مصروف</button>
+      </div>
+    </div>
+
+    <div class="pos-grid">
+      <div class="card">
+        <div class="card-header"><span class="card-title">⚠️ نواقص المخزن</span></div>
+        <div id="dash-low-stock"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">🧾 أحدث الفواتير</span></div>
+        <div id="dash-recent-invoices"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. SALES POS -->
+  <section id="tab-sales" class="section">
+    <div class="pos-grid">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">🔍 اختر الأصناف (بيع)</span>
+          <button class="btn btn-outline btn-xs" onclick="openProductModal()">+ صنف جديد</button>
+        </div>
+        <input type="text" id="sale-search" placeholder="ابحث باسم الصنف أو امسح الباركود ثم اضغط Enter..." oninput="renderSalePicker()" onkeydown="handleBarcodeEnter(event, 'sale')">
+        <div class="search-results" id="sale-picker"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">🛒 سلة فاتورة البيع</span>
+          <button class="btn btn-outline btn-xs" onclick="clearCart('sale')">تفريغ</button>
+        </div>
+        <div class="form-group">
+          <label>العميل</label>
+          <select id="sale-customer"></select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>الصنف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th><th></th></tr></thead>
+            <tbody id="sale-cart-body"></tbody>
+          </table>
+        </div>
+        <div class="form-grid" style="margin-top:12px;">
+          <div class="form-group"><label>خصم (ج)</label><input type="number" id="sale-discount" value="0" min="0" oninput="updateCartTotals('sale')"></div>
+          <div class="form-group"><label>المدفوع (ج)</label><input type="number" id="sale-paid" value="0" min="0" oninput="updateCartTotals('sale')"></div>
+        </div>
+        <div style="background:var(--primary-light); padding:12px; border-radius:10px; margin:10px 0; display:flex; justify-content:space-between; font-weight:800;">
+          <span>الصافي: <span id="sale-net">0</span> ج</span>
+          <span style="color:var(--danger);">المتبقي (آجل): <span id="sale-rem">0</span> ج</span>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-success" style="flex:1;" onclick="saveInvoice('sale', 'none')">💾 حفظ الفاتورة</button>
+          <button class="btn btn-primary" onclick="saveInvoice('sale', 'thermal')">🖨️ ريسيت 80mm</button>
+          <button class="btn btn-outline" onclick="saveInvoice('sale', 'a4')">📄 طباعة A4</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. PURCHASES -->
+  <section id="tab-purchases" class="section">
+    <div class="pos-grid">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">🔍 اختر الأصناف (شراء للمخزن)</span>
+          <button class="btn btn-outline btn-xs" onclick="openProductModal()">+ صنف جديد</button>
+        </div>
+        <input type="text" id="buy-search" placeholder="ابحث باسم الصنف أو الباركود..." oninput="renderBuyPicker()" onkeydown="handleBarcodeEnter(event, 'buy')">
+        <div class="search-results" id="buy-picker"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📥 سلة فاتورة المشتريات</span>
+          <button class="btn btn-outline btn-xs" onclick="clearCart('buy')">تفريغ</button>
+        </div>
+        <div class="form-group">
+          <label>المورد</label>
+          <select id="buy-supplier"></select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>الصنف</th><th>الكمية</th><th>سعر الشراء</th><th>الإجمالي</th><th></th></tr></thead>
+            <tbody id="buy-cart-body"></tbody>
+          </table>
+        </div>
+        <div class="form-grid" style="margin-top:12px;">
+          <div class="form-group"><label>خصم (ج)</label><input type="number" id="buy-discount" value="0" min="0" oninput="updateCartTotals('buy')"></div>
+          <div class="form-group"><label>المدفوع للمورد (ج)</label><input type="number" id="buy-paid" value="0" min="0" oninput="updateCartTotals('buy')"></div>
+        </div>
+        <div style="background:var(--warning-bg); padding:12px; border-radius:10px; margin:10px 0; display:flex; justify-content:space-between; font-weight:800;">
+          <span>الصافي: <span id="buy-net">0</span> ج</span>
+          <span style="color:var(--danger);">المتبقي للمورد: <span id="buy-rem">0</span> ج</span>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-accent" style="flex:1;" onclick="saveInvoice('buy', 'none')">💾 حفظ وإضافة للمخزن</button>
+          <button class="btn btn-outline" onclick="saveInvoice('buy', 'a4')">📄 حفظ وطباعة A4</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. INVENTORY -->
+  <section id="tab-inventory" class="section">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">📦 المخزن والأصناف (<span id="inv-total-val">0</span> ج قيمة التكلفة)</span>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="openProductModal()">+ إضافة صنف</button>
+          <button class="btn btn-outline btn-sm" onclick="exportCSV('products')">📊 تصدير إكسيل</button>
+        </div>
+      </div>
+      <div class="form-grid" style="margin-bottom:12px;">
+        <input type="text" id="inv-search" placeholder="بحث بالاسم أو الباركود..." oninput="renderInventory()">
+        <select id="inv-filter" onchange="renderInventory()">
+          <option value="all">كل الأصناف</option>
+          <option value="low">النواقص فقط</option>
+        </select>
+      </div>
+      <div class="table-wrap" id="inv-table-wrap"></div>
+    </div>
+  </section>
+
+  <!-- 5. CUSTOMERS -->
+  <section id="tab-customers" class="section">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">👥 حسابات العملاء</span>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-primary btn-sm" onclick="openPartyModal('customer')">+ عميل جديد</button>
+          <button class="btn btn-outline btn-sm" onclick="exportCSV('customers')">📊 إكسيل</button>
+        </div>
+      </div>
+      <input type="text" id="cust-search" placeholder="بحث باسم العميل أو رقم التليفون..." oninput="renderParties('customer')" style="margin-bottom:12px;">
+      <div class="table-wrap" id="cust-table-wrap"></div>
+    </div>
+  </section>
+
+  <!-- 6. SUPPLIERS -->
+  <section id="tab-suppliers" class="section">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">🚚 حسابات الموردين</span>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-primary btn-sm" onclick="openPartyModal('supplier')">+ مورد جديد</button>
+          <button class="btn btn-outline btn-sm" onclick="exportCSV('suppliers')">📊 إكسيل</button>
+        </div>
+      </div>
+      <input type="text" id="supp-search" placeholder="بحث باسم المورد أو رقم التليفون..." oninput="renderParties('supplier')" style="margin-bottom:12px;">
+      <div class="table-wrap" id="supp-table-wrap"></div>
+    </div>
+  </section>
+
+  <!-- 7. INVOICES -->
+  <section id="tab-invoices" class="section">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">🧾 سجل الفواتير والمرتجعات</span>
+        <div style="display:flex; gap:8px;">
+          <select id="inv-type-filter" onchange="renderInvoices()" style="width:auto;">
+            <option value="all">الكل</option>
+            <option value="sale">مبيعات فقط</option>
+            <option value="buy">مشتريات فقط</option>
+          </select>
+          <button class="btn btn-outline btn-sm" onclick="exportCSV('invoices')">📊 إكسيل</button>
+        </div>
+      </div>
+      <div class="table-wrap" id="invoices-table-wrap"></div>
+    </div>
+  </section>
+
+  <!-- 8. EXPENSES & REPORTS -->
+  <section id="tab-expenses" class="section">
+    <div class="card">
+      <div class="card-header"><span class="card-title">📈 تقرير الأرباح والخسائر (حسب الفترة)</span></div>
+      <div class="form-grid">
+        <div class="form-group"><label>من تاريخ</label><input type="date" id="rep-from" onchange="renderReports()"></div>
+        <div class="form-group"><label>إلى تاريخ</label><input type="date" id="rep-to" onchange="renderReports()"></div>
+      </div>
+      <div class="stats-grid" style="margin-top:10px; margin-bottom:0;">
+        <div class="stat-card green"><div class="stat-label">إجمالي المبيعات</div><div class="stat-value" id="rep-sales">0 ج</div></div>
+        <div class="stat-card"><div class="stat-label">تكلفة البضاعة المباعة</div><div class="stat-value" id="rep-cogs">0 ج</div></div>
+        <div class="stat-card red"><div class="stat-label">المصروفات</div><div class="stat-value" id="rep-exp">0 ج</div></div>
+        <div class="stat-card orange"><div class="stat-label">صافي الربح</div><div class="stat-value" id="rep-net">0 ج</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-title">💸 تسجيل مصروف يومي</span></div>
+      <div class="form-grid">
+        <div class="form-group"><label>بند المصروف</label><input type="text" id="exp-title" placeholder="مثال: إيجار، كهرباء، شحن، خامات"></div>
+        <div class="form-group"><label>المبلغ (ج)</label><input type="number" id="exp-amount" min="0" placeholder="0"></div>
+        <div class="form-group"><label>التاريخ</label><input type="date" id="exp-date"></div>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="addExpense()">+ حفظ المصروف</button>
+      <div class="table-wrap" id="exp-table-wrap" style="margin-top:14px;"></div>
+    </div>
+  </section>
+
+  <!-- 9. SETTINGS & BACKUP -->
+  <section id="tab-settings" class="section">
+    <div class="card">
+      <div class="card-header"><span class="card-title">🏪 بيانات المتجر (تظهر على الفواتير)</span></div>
+      <div class="form-grid">
+        <div class="form-group"><label>اسم المتجر</label><input type="text" id="set-name"></div>
+        <div class="form-group"><label>رقم الهاتف</label><input type="text" id="set-phone"></div>
+        <div class="form-group"><label>العنوان</label><input type="text" id="set-address"></div>
+        <div class="form-group"><label>ملاحظة أسفل الفاتورة</label><input type="text" id="set-footer"></div>
+      </div>
+      <button class="btn btn-primary" onclick="saveSettings()">💾 حفظ بيانات المتجر</button>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-title">🛡️ النسخ الاحتياطي ونقل البيانات</span></div>
+      <p style="font-size:13px; color:var(--muted); margin-bottom:12px;">
+        يتم حفظ جميع حساباتك تلقائياً على جهازك. يُنصح بأخذ نسخة احتياطية أسبوعياً للاحتفاظ بها على واتساب أو جوجل درايف.
+      </p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-success" onclick="downloadBackup()">⬇️ تحميل نسخة احتياطية (JSON)</button>
+        <label class="btn btn-outline" style="cursor:pointer;">
+          ⬆️ استعادة نسخة احتياطية
+          <input type="file" accept=".json" style="display:none;" onchange="restoreBackup(event)">
+        </label>
+        <button class="btn btn-danger" onclick="resetAllData()">🗑️ تصفير كل البيانات</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Mobile Bottom Navigation -->
+<nav class="bottom-nav">
+  <button class="bnav-btn active" data-tab="dashboard" onclick="switchTab('dashboard')"><span>📊</span>الرئيسية</button>
+  <button class="bnav-btn" data-tab="sales" onclick="switchTab('sales')"><span>🛒</span>بيع</button>
+  <button class="bnav-btn" data-tab="purchases" onclick="switchTab('purchases')"><span>📥</span>شراء</button>
+  <button class="bnav-btn" data-tab="inventory" onclick="switchTab('inventory')"><span>📦</span>المخزن</button>
+  <button class="bnav-btn" data-tab="customers" onclick="switchTab('customers')"><span>👥</span>العملاء</button>
+  <button class="bnav-btn" data-tab="suppliers" onclick="switchTab('suppliers')"><span>🚚</span>الموردين</button>
+  <button class="bnav-btn" data-tab="invoices" onclick="switchTab('invoices')"><span>🧾</span>الفواتير</button>
+</nav>
+
+<!-- Modals -->
+<div class="modal-backdrop" id="modal-product">
+  <div class="modal">
+    <div class="modal-head"><h3 id="prod-modal-title">إضافة صنف جديد</h3><button class="close-btn" onclick="closeModal('modal-product')">&times;</button></div>
+    <input type="hidden" id="prod-id">
+    <div class="form-grid">
+      <div class="form-group"><label>اسم الصنف *</label><input type="text" id="prod-name" placeholder="مثال: طقم حلل، كاتل، مج حراري"></div>
+      <div class="form-group"><label>الباركود (اختياري)</label><input type="text" id="prod-barcode" placeholder="كود أو رقم"></div>
+      <div class="form-group"><label>سعر الشراء (التكلفة) *</label><input type="number" id="prod-cost" min="0" step="0.01"></div>
+      <div class="form-group"><label>سعر البيع *</label><input type="number" id="prod-price" min="0" step="0.01"></div>
+      <div class="form-group"><label>الكمية الحالية بالمخزن</label><input type="number" id="prod-qty" min="0" value="0"></div>
+      <div class="form-group"><label>حد التنبيه للنواقص</label><input type="number" id="prod-min" min="0" value="3"></div>
+    </div>
+    <button class="btn btn-primary" style="width:100%; margin-top:8px;" onclick="saveProduct()">💾 حفظ الصنف</button>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-party">
+  <div class="modal">
+    <div class="modal-head"><h3 id="party-modal-title">إضافة جديد</h3><button class="close-btn" onclick="closeModal('modal-party')">&times;</button></div>
+    <input type="hidden" id="party-id">
+    <input type="hidden" id="party-type">
+    <div class="form-group"><label>الاسم *</label><input type="text" id="party-name"></div>
+    <div class="form-group"><label>رقم الهاتف</label><input type="text" id="party-phone"></div>
+    <div class="form-group"><label id="party-bal-label">رصيد افتتاحي (ج)</label><input type="number" id="party-balance" value="0" step="0.01"></div>
+    <button class="btn btn-primary" style="width:100%; margin-top:8px;" onclick="saveParty()">💾 حفظ</button>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-payment">
+  <div class="modal">
+    <div class="modal-head"><h3 id="pay-modal-title">تسجيل دفعة مالية</h3><button class="close-btn" onclick="closeModal('modal-payment')">&times;</button></div>
+    <input type="hidden" id="pay-party-id">
+    <input type="hidden" id="pay-party-type">
+    <p id="pay-party-info" style="margin-bottom:12px; font-weight:700; color:var(--primary);"></p>
+    <div class="form-group"><label>المبلغ المدفوع (ج) *</label><input type="number" id="pay-amount" min="0.01" step="0.01"></div>
+    <div class="form-group"><label>ملاحظة (اختياري)</label><input type="text" id="pay-note" placeholder="نقدي / فودافون كاش / انستاباي"></div>
+    <button class="btn btn-success" style="width:100%; margin-top:8px;" onclick="savePayment()">✅ تأكيد السداد</button>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-statement">
+  <div class="modal" style="max-width:680px;">
+    <div class="modal-head"><h3 id="stmt-title">كشف حساب</h3><button class="close-btn" onclick="closeModal('modal-statement')">&times;</button></div>
+    <div id="stmt-body"></div>
+    <button class="btn btn-primary" style="margin-top:12px;" onclick="printStatement()">🖨️ طباعة كشف الحساب</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="print-area"></div>
+
+<script>
+// PWA Manifest injection
+(function(){
+  const manifest = {
+    name: "كنز الأسرة - نظام المبيعات والحسابات",
+    short_name: "كنز الأسرة",
+    start_url: ".",
+    display: "standalone",
+    background_color: "#f4f6f8",
+    theme_color: "#0f4c5c",
+    icons: [{
+      src: "data:image/svg+xml;base64," + btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="36" fill="#0f4c5c"/><text x="50%" y="58%" dominant-baseline="middle" text-anchor="middle" fill="#ffffff" font-size="96" font-family="Arial" font-weight="bold">ك</text></svg>'),
+      sizes: "192x192", type: "image/svg+xml"
+    }]
+  };
+  document.getElementById('pwa-manifest').href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifest));
+})();
+
+const STORAGE_KEY = 'kanz_elosra_pos_v1';
+const defaultDB = () => ({
+  settings: {
+    name: 'كنز الأسرة للأدوات المنزلية',
+    phone: '',
+    address: 'الحي الرابع - مدينة 6 أكتوبر',
+    footer: 'شكراً لتعاملكم معنا • البضاعة المباعة ترد وتستبدل خلال 14 يوماً بحالتها'
+  },
+  products: [],
+  customers: [],
+  suppliers: [],
+  invoices: [],
+  payments: [],
+  expenses: [],
+  nextInvoiceNo: 1001
+});
+
+let db = loadDB();
+let carts = { sale: [], buy: [] };
+let currentStatementHTML = '';
+
+function loadDB() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return defaultDB();
+    return Object.assign(defaultDB(), JSON.parse(raw));
+  } catch { return defaultDB(); }
+}
+function saveDB() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+}
+function fmt(n) { return Number(n || 0).toLocaleString('ar-EG', { maximumFractionDigits: 2 }); }
+function todayStr() { return new Date().toISOString().slice(0, 10); }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+const tabTitles = {
+  dashboard: '📊 لوحة التحكم', sales: '🛒 المبيعات (كاشير)', purchases: '📥 المشتريات',
+  inventory: '📦 المخزن والأصناف', customers: '👥 العملاء', suppliers: '🚚 الموردين',
+  invoices: '🧾 سجل الفواتير', expenses: '💸 المصروفات والتقارير', settings: '⚙️ الإعدادات والنسخ'
+};
+
+function switchTab(tab) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.querySelectorAll('.nav-item, .bnav-btn').forEach(el => {
+    el.classList.toggle('active', el.dataset.tab === tab);
+  });
+  document.getElementById('page-title').textContent = tabTitles[tab] || '';
+  refreshAll();
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// PRODUCTS
+function openProductModal(id = null) {
+  const p = id ? db.products.find(x => x.id === id) : null;
+  document.getElementById('prod-modal-title').textContent = p ? 'تعديل صنف' : 'إضافة صنف جديد';
+  document.getElementById('prod-id').value = p ? p.id : '';
+  document.getElementById('prod-name').value = p ? p.name : '';
+  document.getElementById('prod-barcode').value = p ? (p.barcode || '') : '';
+  document.getElementById('prod-cost').value = p ? p.cost : '';
+  document.getElementById('prod-price').value = p ? p.price : '';
+  document.getElementById('prod-qty').value = p ? p.qty : 0;
+  document.getElementById('prod-min').value = p ? p.minStock : 3;
+  openModal('modal-product');
+}
+
+function saveProduct() {
+  const id = document.getElementById('prod-id').value;
+  const name = document.getElementById('prod-name').value.trim();
+  const barcode = document.getElementById('prod-barcode').value.trim();
+  const cost = parseFloat(document.getElementById('prod-cost').value) || 0;
+  const price = parseFloat(document.getElementById('prod-price').value) || 0;
+  const qty = parseFloat(document.getElementById('prod-qty').value) || 0;
+  const minStock = parseFloat(document.getElementById('prod-min').value) || 0;
+  if (!name) return toast('اكتب اسم الصنف أولاً');
+  if (id) {
+    const p = db.products.find(x => x.id === id);
+    if (p) Object.assign(p, { name, barcode, cost, price, qty, minStock });
+  } else {
+    db.products.push({ id: uid(), name, barcode, cost, price, qty, minStock });
+  }
+  saveDB(); closeModal('modal-product'); refreshAll(); toast('تم حفظ الصنف بنجاح');
+}
+
+function deleteProduct(id) {
+  if (!confirm('حذف هذا الصنف من المخزن؟')) return;
+  db.products = db.products.filter(x => x.id !== id);
+  saveDB(); refreshAll(); toast('تم حذف الصنف');
+}
+
+function renderInventory() {
+  const q = (document.getElementById('inv-search').value || '').toLowerCase();
+  const flt = document.getElementById('inv-filter').value;
+  let list = db.products.filter(p => (p.name.toLowerCase().includes(q) || (p.barcode || '').toLowerCase().includes(q)));
+  if (flt === 'low') list = list.filter(p => p.qty <= p.minStock);
+
+  const totalVal = db.products.reduce((s, p) => s + (p.qty * p.cost), 0);
+  document.getElementById('inv-total-val').textContent = fmt(totalVal);
+
+  const wrap = document.getElementById('inv-table-wrap');
+  if (!list.length) {
+    wrap.innerHTML = `<div class="empty-state"><p>لا توجد أصناف مسجلة بعد.</p><button class="btn btn-primary btn-sm" onclick="openProductModal()">+ إضافة أول صنف</button></div>`;
+    return;
+  }
+  wrap.innerHTML = `<table>
+    <thead><tr><th>الصنف</th><th>الباركود</th><th>الشراء</th><th>البيع</th><th>الرصيد</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+    <tbody>${list.map(p => `<tr>
+      <td><strong>${esc(p.name)}</strong></td>
+      <td>${esc(p.barcode || '-')}</td>
+      <td>${fmt(p.cost)} ج</td>
+      <td>${fmt(p.price)} ج</td>
+      <td><strong>${fmt(p.qty)}</strong></td>
+      <td>${p.qty <= p.minStock ? '<span class="badge badge-red">ناقص</span>' : '<span class="badge badge-green">متوفر</span>'}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-outline btn-xs" onclick="openProductModal('${p.id}')">تعديل</button>
+        <button class="btn btn-danger btn-xs" onclick="deleteProduct('${p.id}')">حذف</button>
+      </td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+// PARTIES (CUSTOMERS / SUPPLIERS)
+function openPartyModal(type, id = null) {
+  const arr = type === 'customer' ? db.customers : db.suppliers;
+  const item = id ? arr.find(x => x.id === id) : null;
+  document.getElementById('party-modal-title').textContent = (item ? 'تعديل ' : 'إضافة ') + (type === 'customer' ? 'عميل' : 'مورد');
+  document.getElementById('party-id').value = item ? item.id : '';
+  document.getElementById('party-type').value = type;
+  document.getElementById('party-name').value = item ? item.name : '';
+  document.getElementById('party-phone').value = item ? (item.phone || '') : '';
+  document.getElementById('party-balance').value = item ? item.balance : 0;
+  document.getElementById('party-bal-label').textContent = type === 'customer' ? 'رصيد افتتاحي عليه (لنا عنده - ج)' : 'رصيد افتتاحي له (علينا للمورد - ج)';
+  openModal('modal-party');
+}
+
+function saveParty() {
+  const id = document.getElementById('party-id').value;
+  const type = document.getElementById('party-type').value;
+  const name = document.getElementById('party-name').value.trim();
+  const phone = document.getElementById('party-phone').value.trim();
+  const balance = parseFloat(document.getElementById('party-balance').value) || 0;
+  if (!name) return toast('اكتب الاسم أولاً');
+  const arr = type === 'customer' ? db.customers : db.suppliers;
+  if (id) {
+    const item = arr.find(x => x.id === id);
+    if (item) Object.assign(item, { name, phone, balance });
+  } else {
+    arr.push({ id: uid(), name, phone, balance });
+  }
+  saveDB(); closeModal('modal-party'); refreshAll(); toast('تم الحفظ بنجاح');
+}
+
+function deleteParty(type, id) {
+  if (!confirm('تأكيد الحذف؟')) return;
+  if (type === 'customer') db.customers = db.customers.filter(x => x.id !== id);
+  else db.suppliers = db.suppliers.filter(x => x.id !== id);
+  saveDB(); refreshAll(); toast('تم الحذف');
+}
+
+function renderParties(type) {
+  const isCust = type === 'customer';
+  const q = (document.getElementById(isCust ? 'cust-search' : 'supp-search').value || '').toLowerCase();
+  const list = (isCust ? db.customers : db.suppliers).filter(x => x.name.toLowerCase().includes(q) || (x.phone || '').includes(q));
+  const wrap = document.getElementById(isCust ? 'cust-table-wrap' : 'supp-table-wrap');
+  if (!list.length) {
+    wrap.innerHTML = `<div class="empty-state"><p>لا يوجد ${isCust ? 'عملاء' : 'موردون'} مسجلون بعد.</p><button class="btn btn-primary btn-sm" onclick="openPartyModal('${type}')">+ إضافة ${isCust ? 'أول عميل' : 'أول مورد'}</button></div>`;
+    return;
+  }
+  wrap.innerHTML = `<table>
+    <thead><tr><th>الاسم</th><th>الهاتف</th><th>${isCust ? 'الرصيد عليه (لنا)' : 'الرصيد له (علينا)'}</th><th>إجراءات</th></tr></thead>
+    <tbody>${list.map(p => `<tr>
+      <td><strong>${esc(p.name)}</strong></td>
+      <td>${esc(p.phone || '-')}</td>
+      <td><span class="badge ${p.balance > 0 ? 'badge-red' : 'badge-green'}">${fmt(p.balance)} ج</span></td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-success btn-xs" onclick="openPaymentModal('${type}','${p.id}')">${isCust ? 'تحصيل دفعة' : 'سداد دفعة'}</button>
+        <button class="btn btn-primary btn-xs" onclick="openStatement('${type}','${p.id}')">كشف حساب</button>
+        <button class="btn btn-outline btn-xs" onclick="openPartyModal('${type}','${p.id}')">تعديل</button>
+        <button class="btn btn-danger btn-xs" onclick="deleteParty('${type}','${p.id}')">حذف</button>
+      </td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+function openPaymentModal(type, id) {
+  const arr = type === 'customer' ? db.customers : db.suppliers;
+  const p = arr.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('pay-party-id').value = id;
+  document.getElementById('pay-party-type').value = type;
+  document.getElementById('pay-modal-title').textContent = type === 'customer' ? 'تحصيل دفعة من عميل' : 'سداد دفعة لمورد';
+  document.getElementById('pay-party-info').textContent = `${p.name} — الرصيد الحالي: ${fmt(p.balance)} ج`;
+  document.getElementById('pay-amount').value = p.balance > 0 ? p.balance : '';
+  document.getElementById('pay-note').value = '';
+  openModal('modal-payment');
+}
+
+function savePayment() {
+  const id = document.getElementById('pay-party-id').value;
+  const type = document.getElementById('pay-party-type').value;
+  const amount = parseFloat(document.getElementById('pay-amount').value) || 0;
+  const note = document.getElementById('pay-note').value.trim();
+  if (amount <= 0) return toast('أدخل مبلغاً صحيحاً');
+  const arr = type === 'customer' ? db.customers : db.suppliers;
+  const p = arr.find(x => x.id === id);
+  if (!p) return;
+  p.balance = Math.round((p.balance - amount) * 100) / 100;
+  db.payments.push({ id: uid(), date: todayStr(), partyId: id, partyType: type, partyName: p.name, amount, note });
+  saveDB(); closeModal('modal-payment'); refreshAll(); toast('تم تسجيل الدفعة وتحديث الرصيد');
+}
+
+function openStatement(type, id) {
+  const isCust = type === 'customer';
+  const p = (isCust ? db.customers : db.suppliers).find(x => x.id === id);
+  if (!p) return;
+  const invs = db.invoices.filter(i => i.partyId === id && i.type === (isCust ? 'sale' : 'buy')).map(i => ({
+    date: i.date, desc: `فاتورة #${i.no} ${i.returned ? '(مرتجع)' : ''}`, debit: i.returned ? 0 : i.net, credit: i.returned ? 0 : i.paid
+  }));
+  const pays = db.payments.filter(x => x.partyId === id && x.partyType === type).map(x => ({
+    date: x.date, desc: `دفعة سداد ${x.note ? '(' + x.note + ')' : ''}`, debit: 0, credit: x.amount
+  }));
+  const rows = [...invs, ...pays].sort((a, b) => a.date.localeCompare(b.date));
+  const html = `
+    <div style="margin-bottom:10px;">
+      <strong>${esc(db.settings.name)}</strong><br>
+      كشف حساب ${isCust ? 'العميل' : 'المورد'}: <strong>${esc(p.name)}</strong> (${esc(p.phone || '-')})<br>
+      الرصيد الحالي المتبقي: <strong>${fmt(p.balance)} ج</strong>
+    </div>
+    <table>
+      <thead><tr><th>التاريخ</th><th>البيان</th><th>قيمة الفاتورة</th><th>المدفوع</th></tr></thead>
+      <tbody>${rows.length ? rows.map(r => `<tr><td>${r.date}</td><td>${esc(r.desc)}</td><td>${fmt(r.debit)} ج</td><td>${fmt(r.credit)} ج</td></tr>`).join('') : '<tr><td colspan="4" style="text-align:center;">لا توجد حركات مسجلة</td></tr>'}</tbody>
+    </table>`;
+  currentStatementHTML = html;
+  document.getElementById('stmt-title').textContent = 'كشف حساب: ' + p.name;
+  document.getElementById('stmt-body').innerHTML = html;
+  openModal('modal-statement');
+}
+
+function printStatement() {
+  const area = document.getElementById('print-area');
+  area.className = 'a4';
+  area.innerHTML = currentStatementHTML;
+  window.print();
+}
+
+// POS & PURCHASES
+function renderPartySelects() {
+  document.getElementById('sale-customer').innerHTML = `<option value="">عميل نقدي (عام)</option>` +
+    db.customers.map(c => `<option value="${c.id}">${esc(c.name)} (رصيد: ${fmt(c.balance)} ج)</option>`).join('');
+  document.getElementById('buy-supplier').innerHTML = `<option value="">مورد نقدي (عام)</option>` +
+    db.suppliers.map(s => `<option value="${s.id}">${esc(s.name)} (رصيد: ${fmt(s.balance)} ج)</option>`).join('');
+}
+
+function renderSalePicker() { renderPicker('sale'); }
+function renderBuyPicker() { renderPicker('buy'); }
+
+function renderPicker(mode) {
+  const q = (document.getElementById(mode + '-search').value || '').toLowerCase();
+  const list = db.products.filter(p => p.name.toLowerCase().includes(q) || (p.barcode || '').toLowerCase().includes(q));
+  const box = document.getElementById(mode + '-picker');
+  if (!list.length) {
+    box.innerHTML = `<div class="empty-state" style="padding:18px;"><p style="margin:0;">لا توجد أصناف مطابقة. أضف أصنافك من زر (+ صنف جديد).</p></div>`;
+    return;
+  }
+  box.innerHTML = list.map(p => `<div class="prod-pick" onclick="addToCart('${mode}','${p.id}')">
+    <div><strong>${esc(p.name)}</strong><br><small style="color:var(--muted);">المخزن: ${fmt(p.qty)} | ${p.barcode ? 'كود: ' + esc(p.barcode) : ''}</small></div>
+    <div style="text-align:left;"><strong style="color:var(--primary);">${fmt(mode === 'sale' ? p.price : p.cost)} ج</strong><br><small style="color:var(--success);">+ إضافة</small></div>
+  </div>`).join('');
+}
+
+function handleBarcodeEnter(e, mode) {
+  if (e.key !== 'Enter') return;
+  const code = e.target.value.trim().toLowerCase();
+  if (!code) return;
+  const found = db.products.find(p => (p.barcode || '').toLowerCase() === code || p.name.toLowerCase() === code);
+  if (found) { addToCart(mode, found.id); e.target.value = ''; renderPicker(mode); }
+}
+
+function addToCart(mode, prodId) {
+  const p = db.products.find(x => x.id === prodId);
+  if (!p) return;
+  const cart = carts[mode];
+  const existing = cart.find(x => x.productId === prodId);
+  if (existing) existing.qty += 1;
+  else cart.push({ productId: p.id, name: p.name, qty: 1, price: mode === 'sale' ? p.price : p.cost, cost: p.cost });
+  renderCart(mode);
+}
+
+function renderCart(mode) {
+  const cart = carts[mode];
+  const tbody = document.getElementById(mode + '-cart-body');
+  if (!cart.length) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--muted); padding:18px;">السلة فارغة</td></tr>`;
+  } else {
+    tbody.innerHTML = cart.map((item, i) => `<tr>
+      <td>${esc(item.name)}</td>
+      <td><input type="number" value="${item.qty}" min="1" style="width:62px; padding:4px;" onchange="updateCartItem('${mode}',${i},'qty',this.value)"></td>
+      <td><input type="number" value="${item.price}" min="0" step="0.01" style="width:76px; padding:4px;" onchange="updateCartItem('${mode}',${i},'price',this.value)"></td>
+      <td><strong>${fmt(item.qty * item.price)}</strong></td>
+      <td><button class="btn btn-danger btn-xs" onclick="removeCartItem('${mode}',${i})">&times;</button></td>
+    </tr>`).join('');
+  }
+  const sub = cart.reduce((s, x) => s + x.qty * x.price, 0);
+  const disc = parseFloat(document.getElementById(mode + '-discount').value) || 0;
+  document.getElementById(mode + '-paid').value = Math.max(0, sub - disc);
+  updateCartTotals(mode);
+}
+
+function updateCartItem(mode, idx, field, val) {
+  carts[mode][idx][field] = Math.max(0, parseFloat(val) || 0);
+  renderCart(mode);
+}
+function removeCartItem(mode, idx) { carts[mode].splice(idx, 1); renderCart(mode); }
+function clearCart(mode) { carts[mode] = []; document.getElementById(mode + '-discount').value = 0; renderCart(mode); }
+
+function updateCartTotals(mode) {
+  const sub = carts[mode].reduce((s, x) => s + x.qty * x.price, 0);
+  const disc = parseFloat(document.getElementById(mode + '-discount').value) || 0;
+  const net = Math.max(0, sub - disc);
+  const paid = parseFloat(document.getElementById(mode + '-paid').value) || 0;
+  const rem = Math.max(0, net - paid);
+  document.getElementById(mode + '-net').textContent = fmt(net);
+  document.getElementById(mode + '-rem').textContent = fmt(rem);
+}
+
+function saveInvoice(mode, printType) {
+  const cart = carts[mode];
+  if (!cart.length) return toast('أضف أصنافاً للفاتورة أولاً');
+  const partyId = document.getElementById(mode === 'sale' ? 'sale-customer' : 'buy-supplier').value;
+  const partyArr = mode === 'sale' ? db.customers : db.suppliers;
+  const party = partyId ? partyArr.find(x => x.id === partyId) : null;
+
+  const sub = cart.reduce((s, x) => s + x.qty * x.price, 0);
+  const disc = parseFloat(document.getElementById(mode + '-discount').value) || 0;
+  const net = Math.max(0, sub - disc);
+  const paid = parseFloat(document.getElementById(mode + '-paid').value) || 0;
+  const rem = Math.max(0, net - paid);
+
+  if (rem > 0 && !party) return toast('لتسجيل مبلغ آجل، يرجى اختيار ' + (mode === 'sale' ? 'عميل' : 'مورد') + ' محدد');
+
+  // Update inventory
+  cart.forEach(item => {
+    const p = db.products.find(x => x.id === item.productId);
+    if (!p) return;
+    if (mode === 'sale') p.qty = Math.max(0, p.qty - item.qty);
+    else { p.qty += item.qty; p.cost = item.price; }
+  });
+  if (party && rem > 0) party.balance = Math.round((party.balance + rem) * 100) / 100;
+
+  const inv = {
+    id: uid(), no: db.nextInvoiceNo++, type: mode, date: todayStr(),
+    time: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
+    partyId: party ? party.id : '', partyName: party ? party.name : (mode === 'sale' ? 'عميل نقدي' : 'مورد نقدي'),
+    items: JSON.parse(JSON.stringify(cart)), sub, disc, net, paid, rem, returned: false
+  };
+  db.invoices.unshift(inv);
+  saveDB();
+  clearCart(mode);
+  refreshAll();
+  toast(`تم حفظ الفاتورة #${inv.no} بنجاح`);
+  if (printType !== 'none') printInvoice(inv.id, printType);
+}
+
+function returnInvoice(id) {
+  const inv = db.invoices.find(x => x.id === id);
+  if (!inv || inv.returned) return;
+  if (!confirm(`تأكيد عمل مرتجع للفاتورة #${inv.no} وإعادة الكميات للمخزن؟`)) return;
+  inv.items.forEach(item => {
+    const p = db.products.find(x => x.id === item.productId);
+    if (!p) return;
+    if (inv.type === 'sale') p.qty += item.qty;
+    else p.qty = Math.max(0, p.qty - item.qty);
+  });
+  if (inv.partyId && inv.rem > 0) {
+    const arr = inv.type === 'sale' ? db.customers : db.suppliers;
+    const party = arr.find(x => x.id === inv.partyId);
+    if (party) party.balance = Math.round((party.balance - inv.rem) * 100) / 100;
+  }
+  inv.returned = true;
+  saveDB(); refreshAll(); toast('تم تسجيل المرتجع وتعديل المخزن والحساب');
+}
+
+function printInvoice(id, format) {
+  const inv = db.invoices.find(x => x.id === id);
+  if (!inv) return;
+  const area = document.getElementById('print-area');
+  area.className = format;
+  area.innerHTML = `
+    <div style="text-align:center; margin-bottom:10px;">
+      <h2 style="margin:0;">${esc(db.settings.name)}</h2>
+      ${db.settings.address ? `<div>${esc(db.settings.address)}</div>` : ''}
+      ${db.settings.phone ? `<div>ت: ${esc(db.settings.phone)}</div>` : ''}
+      <hr style="margin:6px 0;">
+      <strong>${inv.type === 'sale' ? 'فاتورة مبيعات' : 'فاتورة مشتريات'} #${inv.no}</strong>
+      <div>التاريخ: ${inv.date} ${inv.time || ''} | ${inv.type === 'sale' ? 'العميل' : 'المورد'}: ${esc(inv.partyName)}</div>
+    </div>
+    <table>
+      <thead><tr><th>الصنف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
+      <tbody>${inv.items.map(i => `<tr><td>${esc(i.name)}</td><td>${fmt(i.qty)}</td><td>${fmt(i.price)}</td><td>${fmt(i.qty * i.price)}</td></tr>`).join('')}</tbody>
+    </table>
+    <div style="margin-top:8px;">
+      <div>الإجمالي قبل الخصم: ${fmt(inv.sub)} ج</div>
+      ${inv.disc > 0 ? `<div>الخصم: ${fmt(inv.disc)} ج</div>` : ''}
+      <div><strong>الصافي المطلوب: ${fmt(inv.net)} ج</strong></div>
+      <div>المدفوع: ${fmt(inv.paid)} ج | المتبقي: ${fmt(inv.rem)} ج</div>
+    </div>
+    ${db.settings.footer ? `<p style="text-align:center; margin-top:12px; font-size:11px;">${esc(db.settings.footer)}</p>` : ''}
+  `;
+  window.print();
+}
+
+function renderInvoices() {
+  const flt = document.getElementById('inv-type-filter').value;
+  const list = db.invoices.filter(i => flt === 'all' || i.type === flt);
+  const wrap = document.getElementById('invoices-table-wrap');
+  if (!list.length) {
+    wrap.innerHTML = `<div class="empty-state"><p>لا توجد فواتير مسجلة حتى الآن.</p></div>`;
+    return;
+  }
+  wrap.innerHTML = `<table>
+    <thead><tr><th>رقم</th><th>النوع</th><th>التاريخ</th><th>العميل / المورد</th><th>الصافي</th><th>المدفوع</th><th>المتبقي</th><th>إجراءات</th></tr></thead>
+    <tbody>${list.map(i => `<tr>
+      <td><strong>#${i.no}</strong> ${i.returned ? '<span class="badge badge-red">مرتجع</span>' : ''}</td>
+      <td><span class="badge ${i.type === 'sale' ? 'badge-green' : 'badge-blue'}">${i.type === 'sale' ? 'بيع' : 'شراء'}</span></td>
+      <td>${i.date}</td>
+      <td>${esc(i.partyName)}</td>
+      <td><strong>${fmt(i.net)} ج</strong></td>
+      <td>${fmt(i.paid)} ج</td>
+      <td>${i.rem > 0 ? `<span class="badge badge-warn">${fmt(i.rem)} ج</span>` : '0'}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-outline btn-xs" onclick="printInvoice('${i.id}','thermal')">ريسيت</button>
+        <button class="btn btn-outline btn-xs" onclick="printInvoice('${i.id}','a4')">A4</button>
+        ${!i.returned ? `<button class="btn btn-danger btn-xs" onclick="returnInvoice('${i.id}')">مرتجع</button>` : ''}
+      </td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+// EXPENSES & REPORTS
+function addExpense() {
+  const title = document.getElementById('exp-title').value.trim();
+  const amount = parseFloat(document.getElementById('exp-amount').value) || 0;
+  const date = document.getElementById('exp-date').value || todayStr();
+  if (!title || amount <= 0) return toast('أدخل بند المصروف والمبلغ');
+  db.expenses.unshift({ id: uid(), title, amount, date });
+  document.getElementById('exp-title').value = '';
+  document.getElementById('exp-amount').value = '';
+  saveDB(); refreshAll(); toast('تم تسجيل المصروف');
+}
+
+function deleteExpense(id) {
+  db.expenses = db.expenses.filter(x => x.id !== id);
+  saveDB(); refreshAll();
+}
+
+function renderReports() {
+  const from = document.getElementById('rep-from').value || '2000-01-01';
+  const to = document.getElementById('rep-to').value || '2099-12-31';
+  const sales = db.invoices.filter(i => i.type === 'sale' && !i.returned && i.date >= from && i.date <= to);
+  const totalSales = sales.reduce((s, i) => s + i.net, 0);
+  const totalCogs = sales.reduce((s, i) => s + i.items.reduce((cs, it) => cs + (it.cost || 0) * it.qty, 0), 0);
+  const exps = db.expenses.filter(e => e.date >= from && e.date <= to);
+  const totalExp = exps.reduce((s, e) => s + e.amount, 0);
+
+  document.getElementById('rep-sales').textContent = fmt(totalSales) + ' ج';
+  document.getElementById('rep-cogs').textContent = fmt(totalCogs) + ' ج';
+  document.getElementById('rep-exp').textContent = fmt(totalExp) + ' ج';
+  document.getElementById('rep-net').textContent = fmt(totalSales - totalCogs - totalExp) + ' ج';
+
+  const wrap = document.getElementById('exp-table-wrap');
+  if (!db.expenses.length) {
+    wrap.innerHTML = `<div class="empty-state" style="padding:16px;"><p>لا توجد مصروفات مسجلة.</p></div>`;
+    return;
+  }
+  wrap.innerHTML = `<table><thead><tr><th>التاريخ</th><th>البند</th><th>المبلغ</th><th></th></tr></thead>
+    <tbody>${db.expenses.map(e => `<tr><td>${e.date}</td><td>${esc(e.title)}</td><td><strong>${fmt(e.amount)} ج</strong></td><td><button class="btn btn-danger btn-xs" onclick="deleteExpense('${e.id}')">حذف</button></td></tr>`).join('')}</tbody></table>`;
+}
+
+// DASHBOARD
+function renderDashboard() {
+  const today = todayStr();
+  const todaySales = db.invoices.filter(i => i.type === 'sale' && !i.returned && i.date === today);
+  const salesSum = todaySales.reduce((s, i) => s + i.net, 0);
+  const cogsSum = todaySales.reduce((s, i) => s + i.items.reduce((cs, it) => cs + (it.cost || 0) * it.qty, 0), 0);
+  const todayExp = db.expenses.filter(e => e.date === today).reduce((s, e) => s + e.amount, 0);
+
+  document.getElementById('stat-today-sales').textContent = fmt(salesSum) + ' ج';
+  document.getElementById('stat-today-count').textContent = todaySales.length + ' فاتورة';
+  document.getElementById('stat-today-profit').textContent = fmt(salesSum - cogsSum - todayExp) + ' ج';
+  document.getElementById('stat-cust-due').textContent = fmt(db.customers.reduce((s, c) => s + Math.max(0, c.balance), 0)) + ' ج';
+  document.getElementById('stat-cust-count').textContent = db.customers.length + ' عميل';
+  document.getElementById('stat-supp-due').textContent = fmt(db.suppliers.reduce((s, c) => s + Math.max(0, c.balance), 0)) + ' ج';
+  document.getElementById('stat-supp-count').textContent = db.suppliers.length + ' مورد';
+
+  const lows = db.products.filter(p => p.qty <= p.minStock);
+  document.getElementById('dash-low-stock').innerHTML = lows.length
+    ? lows.slice(0, 6).map(p => `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);"><span>${esc(p.name)}</span><span class="badge badge-red">متبقي ${fmt(p.qty)}</span></div>`).join('')
+    : `<p style="color:var(--muted); font-size:13px;">لا توجد نواقص حالياً.</p>`;
+
+  document.getElementById('dash-recent-invoices').innerHTML = db.invoices.length
+    ? db.invoices.slice(0, 6).map(i => `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);"><span>#${i.no} - ${esc(i.partyName)}</span><strong>${fmt(i.net)} ج</strong></div>`).join('')
+    : `<p style="color:var(--muted); font-size:13px;">لم تصدر فواتير بعد.</p>`;
+}
+
+// SETTINGS & BACKUP
+function loadSettingsForm() {
+  document.getElementById('side-store-name').textContent = db.settings.name || 'كنز الأسرة';
+  document.getElementById('set-name').value = db.settings.name || '';
+  document.getElementById('set-phone').value = db.settings.phone || '';
+  document.getElementById('set-address').value = db.settings.address || '';
+  document.getElementById('set-footer').value = db.settings.footer || '';
+}
+function saveSettings() {
+  db.settings.name = document.getElementById('set-name').value.trim() || 'كنز الأسرة';
+  db.settings.phone = document.getElementById('set-phone').value.trim();
+  db.settings.address = document.getElementById('set-address').value.trim();
+  db.settings.footer = document.getElementById('set-footer').value.trim();
+  saveDB(); loadSettingsForm(); toast('تم حفظ بيانات المتجر');
+}
+
+function downloadBackup() {
+  const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `kanz-elosra-backup-${todayStr()}.json`;
+  a.click();
+  toast('تم تحميل النسخة الاحتياطية');
+}
+
+function restoreBackup(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      if (!parsed.products || !parsed.invoices) throw new Error();
+      db = Object.assign(defaultDB(), parsed);
+      saveDB(); refreshAll(); toast('تم استعادة النسخة الاحتياطية بنجاح');
+    } catch { toast('ملف النسخة الاحتياطية غير صالح'); }
+  };
+  reader.readAsText(file);
+}
+
+function resetAllData() {
+  if (!confirm('تحذير: سيتم مسح كل الأصناف والفواتير والعملاء والموردين نهائياً! هل أنت متأكد؟')) return;
+  if (!confirm('تأكيد أخير: هل تريد تصفير البرنامج بالكامل؟')) return;
+  db = defaultDB();
+  saveDB(); refreshAll(); toast('تم تصفير البرنامج بالكامل');
+}
+
+function exportCSV(type) {
+  let rows = [];
+  if (type === 'products') {
+    rows = [['الاسم', 'الباركود', 'سعر الشراء', 'سعر البيع', 'الكمية'], ...db.products.map(p => [p.name, p.barcode || '', p.cost, p.price, p.qty])];
+  } else if (type === 'customers') {
+    rows = [['العميل', 'الهاتف', 'الرصيد عليه'], ...db.customers.map(c => [c.name, c.phone || '', c.balance])];
+  } else if (type === 'suppliers') {
+    rows = [['المورد', 'الهاتف', 'الرصيد له'], ...db.suppliers.map(s => [s.name, s.phone || '', s.balance])];
+  } else if (type === 'invoices') {
+    rows = [['رقم الفاتورة', 'النوع', 'التاريخ', 'الطرف', 'الصافي', 'المدفوع', 'المتبقي', 'الحالة'],
+      ...db.invoices.map(i => [i.no, i.type === 'sale' ? 'بيع' : 'شراء', i.date, i.partyName, i.net, i.paid, i.rem, i.returned ? 'مرتجع' : 'معتمدة'])];
+  }
+  const csv = '\uFEFF' + rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+  a.download = `kanz-elosra-${type}-${todayStr()}.csv`;
+  a.click();
+}
+
+function esc(s) {
+  return String(s || '').replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+}
+
+function refreshAll() {
+  loadSettingsForm();
+  renderDashboard();
+  renderInventory();
+  renderParties('customer');
+  renderParties('supplier');
+  renderPartySelects();
+  renderSalePicker();
+  renderBuyPicker();
+  renderCart('sale');
+  renderCart('buy');
+  renderInvoices();
+  renderReports();
+}
+
+// Init dates
+document.getElementById('exp-date').value = todayStr();
+document.getElementById('rep-from').value = todayStr().slice(0, 8) + '01';
+document.getElementById('rep-to').value = todayStr();
+refreshAll();
+</script>
+</body>
+</html>
